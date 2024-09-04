@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "ghsldownloader"
+version = "0.1.0"
+description = "Utility package to download GHSL data products."
+authors = ["Gonzalo Peraza"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+numpy = "^2.1.0"
+pandas = "^2.2.2"
+geopandas = "^1.0.1"
+matplotlib = "^3.9.2"
+gdal = [
+    { url = "https://github.com/cgohlke/geospatial-wheels/releases/download/v2024.2.18/GDAL-3.8.4-cp310-cp310-win_amd64.whl", platform = "win32", python = ">=3.10,<3.11"},
+    { url = "https://github.com/cgohlke/geospatial-wheels/releases/download/v2024.2.18/GDAL-3.8.4-cp311-cp311-win_amd64.whl", platform = "win32", python = ">=3.11,<3.12"},
+    { url = "https://github.com/cgohlke/geospatial-wheels/releases/download/v2024.2.18/GDAL-3.8.4-cp312-cp312-win_amd64.whl", platform = "win32", python = ">=3.12,<3.13"},
+    { version = "3.9.2", platform = "linux", source = "pypi" },
+    { version = "3.9.2", platform = "darwin", source = "pypi" }
+]
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+jupyter = "^1.1.1"
+myst-nb = "^1.1.1"
+sphinx-autoapi = "^3.3.0"
+sphinx-rtd-theme = "^2.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
