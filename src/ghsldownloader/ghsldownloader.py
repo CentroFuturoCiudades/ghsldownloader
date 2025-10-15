@@ -10,7 +10,7 @@ methods.
 Inspired by functionallity of the Flexurba R package,
 reimplements the download functions for GHSL data.
 
-Supports donwloading and loading the followind data products of the 2023A release 
+Supports donwloading and loading the followind data products of the 2023A release
 from the GHSL repositories.
 
 - BUILT-S: built-up surface.
@@ -34,7 +34,7 @@ from zipfile import ZipFile
 import geopandas as gpd
 from osgeo import gdal
 
-VALID_PRODS = ("BUILT_S", "POP", "LAND", "SMOD")
+VALID_PRODS = ("BUILT_S", "POP", "LAND", "SMOD", "BUILT_V")
 VALID_EPOCHS = tuple(range(1975, 2031, 5))
 
 
@@ -69,7 +69,7 @@ def load_ghsl_tiles():
 
 def download_ghsl(
     output_dir,
-    products=("POP", "BUILT_S", "LAND", "SMOD"),
+    products=("POP", "BUILT_S", "LAND", "SMOD", "BUILT_V"),
     epochs=(2020,),
     crs=54009,
     resolution=1000,
