@@ -36,6 +36,7 @@ from osgeo import gdal
 
 VALID_PRODS = ("BUILT_S", "POP", "LAND", "SMOD", "BUILT_V")
 VALID_EPOCHS = tuple(range(1975, 2031, 5))
+HAS_NRES = ("BUILT_S", "BUILT_V")
 
 
 def load_ghsl_tiles():
@@ -77,6 +78,7 @@ def download_ghsl(
     prefix="",
     bbox=None,
     tiles=None,
+    nres=False,
 ):
     """Downloads GHSL data products.
 
@@ -103,6 +105,8 @@ def download_ghsl(
     prefix : str, optional
         Prefix to append to the filenames of the downloaded products,
         by default an empty string.
+    nres : bool, optional
+        If True, donwloads non-residential version when available for source.
 
     Returns
     -------
@@ -147,6 +151,8 @@ def download_ghsl(
     prod_list.extend(itertools.product(products, epochs, [crs], [resolution]))
 
     # Get a list of tiles to download
+    regions_dict = None
+    tile_id = None
     if extent == "global":
         # We will request the global file
         tile_id = ("global",)
@@ -167,6 +173,8 @@ def download_ghsl(
     elif extent == "bbox":
         tiles_gdf = load_ghsl_tiles()
         tile_id = tiles_gdf[tiles_gdf.intersects(bbox)].tile_id.values
+    else:
+        raise NotImplementedError
 
     # Create download urls for each product
     product_dict = {}
@@ -178,11 +186,13 @@ def download_ghsl(
         temp_dir.mkdir(exist_ok=True)
         for tile in tile_id:
             curr_prod_dict["tiles"][tile] = {
-                "url": build_tile_url(tile, product, epoch, crs, resolution),
+                "url": build_tile_url(tile, product, epoch, crs, resolution, nres),
                 "zipfile": f"{product}_{epoch}_{crs}_{resolution}_{tile}.zip",
             }
         curr_prod_dict["dir"] = temp_dir
-        curr_prod_dict["tiffile"] = f"{prefix}{product}_{epoch}_{crs}_{resolution}.tif"
+        curr_prod_dict["tiffile"] = (
+            f"{prefix}{product}{"_NRES" if nres else ""}_{epoch}_{crs}_{resolution}.tif"
+        )
 
     # Download and merge tiles
     file_list = []
@@ -264,7 +274,7 @@ def download_ghsl(
     return file_list
 
 
-def build_tile_url(tile_id, product, epoch, crs, resolution):
+def build_tile_url(tile_id, product, epoch, crs, resolution, nres):
     """Generates url for global data file or tile in the GHSL FTP servers.
 
     Parameters
@@ -298,9 +308,13 @@ def build_tile_url(tile_id, product, epoch, crs, resolution):
         version = "V2-0"
     else:
         version = "V1-0"
+    if nres:
+        nres_str = "_NRES"
+    else:
+        nres_str = ""
     base_url = "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/"
     level1 = f"GHS_{product}_GLOBE_{release}/"
-    level2 = f"GHS_{product}_E{epoch}_GLOBE_{release}_{crs}_{resolution}/"
+    level2 = f"GHS_{product}{nres_str}_E{epoch}_GLOBE_{release}_{crs}_{resolution}/"
     level3 = f"{version}/"
     if tile_id == "global":
         level4 = ""
@@ -309,7 +323,7 @@ def build_tile_url(tile_id, product, epoch, crs, resolution):
         level4 = "tiles/"
         tile_id = "_" + tile_id
     level5 = (
-        f"GHS_{product}_E{epoch}_GLOBE_{release}_{crs}_{resolution}_"
+        f"GHS_{product}{nres_str}_E{epoch}_GLOBE_{release}_{crs}_{resolution}_"
         f"{version.replace('-', '_')}{tile_id}.zip"
     )
 
